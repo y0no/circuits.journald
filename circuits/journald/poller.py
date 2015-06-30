@@ -1,11 +1,11 @@
 from systemd import journal
 
 from circuits.core.pollers import Poll, BasePoller
-from circuits import BaseComponent, handler
+from circuits import Component, handler
 from circuits.core.utils import findcmp
 from circuits.io.events import ready, read
 
-class JournalPoller(BaseComponent):
+class JournalPoller(Component):
     channel = 'journalctl'
 
     def __init__(self, channel=channel):
@@ -15,7 +15,7 @@ class JournalPoller(BaseComponent):
         self.journal.seek_tail()
 
     @handler("registered", "started", channel="*")
-    def _on_registered_or_started(self, component, _):
+    def _on_registered_or_started(self, component, _manager=None):
         if self._poller is None:
             if isinstance(component, BasePoller):
                 self._poller = component
@@ -32,11 +32,11 @@ class JournalPoller(BaseComponent):
                     self.fire(ready(self))
 
     @handler('ready')
-    def __on_ready(self, _):
+    def __on_ready(self, _component):
         self._poller.addReader(self, self.journal)
 
     @handler('_read', priority=1)
-    def __on_read(self, _):
+    def __on_read(self, _fd):
         for line in self.journal:
             self.fire(read(line))
         self.journal.process()
