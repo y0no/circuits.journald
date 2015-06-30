@@ -1,1 +1,0 @@
-from .poller import JournalPoller
