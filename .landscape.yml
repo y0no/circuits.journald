@@ -1,3 +1,5 @@
+ignore-paths:
+  - examples
 pylint:
   disable:
     - super-on-old-class
