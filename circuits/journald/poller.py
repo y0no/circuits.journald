@@ -15,7 +15,8 @@ class JournalPoller(Component):
         self.journal.seek_tail()
 
     @handler("registered", "started", channel="*")
-    def _on_registered_or_started(self, component, _manager=None):
+    def _on_registered_or_started(self, component, manager=None):
+        del manager
         if self._poller is None:
             if isinstance(component, BasePoller):
                 self._poller = component
@@ -32,11 +33,14 @@ class JournalPoller(Component):
                     self.fire(ready(self))
 
     @handler('ready')
-    def __on_ready(self, _component):
+    def __on_ready(self, component):
+        del component
         self._poller.addReader(self, self.journal)
 
     @handler('_read', priority=1)
-    def __on_read(self, _fd):
+    def __on_read(self, fd):
+        del fd
+
         for line in self.journal:
             self.fire(read(line))
         self.journal.process()
